@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">PopularMovie</string>
+    <string name="imageview_contentdescription">Imageview to hold movie poster</string>
+    <string name="sort_order">Sort Order by</string>
+    <string name="error_message">Oops! Error loading movies.</string>
+    <string name="release_date">Release Date:</string>
+    <string name="rating">Rating:</string>
+    <string name="spinner_popularity">Popularity</string>
+    <string name="spinner_rating">Rating</string>
+    <string-array name="sort_array">
+        <item>@string/spinner_popularity</item>
+        <item>@string/spinner_rating</item>
+    </string-array>
+</resources>
