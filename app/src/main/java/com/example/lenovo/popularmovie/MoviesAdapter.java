@@ -60,7 +60,10 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
             JSONObject movieObj = mMoviesArray.getJSONObject(position);
             String posterPath = NetworkUtils.MOVIEDB_POSTER_PATH_BASE_URL + movieObj.getString("poster_path");
             int id = movieObj.getInt("id");
-            Picasso.with(mContext).load(posterPath).into(holder.mMovieImageView);
+            Picasso.with(mContext)
+                    .load(posterPath)
+                    .placeholder(R.drawable.unnamed)
+                    .into(holder.mMovieImageView);
             holder.itemView.setTag(id);
         } catch (JSONException e) {
             e.printStackTrace();
