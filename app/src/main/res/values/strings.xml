@@ -7,8 +7,20 @@
     <string name="rating">Rating:</string>
     <string name="spinner_popularity">Popularity</string>
     <string name="spinner_rating">Rating</string>
+    <string name="spinner_favourite">Favourite</string>
     <string-array name="sort_array">
         <item>@string/spinner_popularity</item>
         <item>@string/spinner_rating</item>
+        <item>@string/spinner_favourite</item>
     </string-array>
+    <string name="title_activity_scrolling">ScrollingActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="movie_description_title">Synopsis:</string>
+    <string name="movie_trailers">Trailers:</string>
+    <string name="movie_reviews">Reviews:</string>
+    <string name="error_trailer">No Trailers to show.</string>
+    <string name="error_review">No reviews to show.</string>
+    <string name="error_no_connection">No internet connection</string>
+    <string name="preference_key_sort_order">sort_order</string>
+    <string name="error_no_fav">No movies in favourite list.</string>
 </resources>
