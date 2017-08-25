@@ -34,11 +34,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 
+
 public class MainActivity extends AppCompatActivity implements
         MoviesAdapter.MovieClickListener,
         AdapterView.OnItemSelectedListener{
 
     private static final String MOVIE_DEFAULT_SORT = "default-sort";
+    private static final String MOVIE_LOADED_FROM_OFFLINE_BUNDLE_KEY = "is_loaded_offline" ;
     // The tag for the moviedburl, use in bundle
     private final String MOVIE_DB_URL = "movie_url";
     private final String MOVIE_JSON_RESULT = "movie-json-result";
@@ -82,9 +84,13 @@ public class MainActivity extends AppCompatActivity implements
                             mErrorTextView.setVisibility(View.INVISIBLE);
 
                             if(result != null){
+                                Log.v("Spinner", "Delivering Result from online");
                                 deliverResult(result);
                             }else{
-                                forceLoad();
+                                if(!isDataLoadedFromDb) {
+                                    Log.v("Spinner", "Force load Result from online");
+                                    forceLoad();
+                                }
                             }
                         }
 
@@ -118,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements
                     }else {
                         showError();
                     }
+                    Log.v("Spinner", "On Load finished online.");
                 }
 
                 @Override
@@ -140,10 +147,16 @@ public class MainActivity extends AppCompatActivity implements
                         @Override
                         protected void onStartLoading() {
 
-                            if(cursor != null)
+                            if(cursor != null) {
+                                Log.v("Spinner", "Delivering Result from offline");
                                 deliverResult(cursor);
-                            else
-                                forceLoad();
+                            }
+                            else {
+                                if(isDataLoadedFromDb) {
+                                    Log.v("Spinner", "Forcing to load offline");
+                                    forceLoad();
+                                }
+                            }
                         }
 
                         @Override
@@ -171,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements
                         mErrorTextView.setVisibility(View.INVISIBLE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
-                    data.close();
+                    Log.v("Spinner", "onLoadFinished From Offline");
                 }
 
                 @Override
@@ -180,6 +193,11 @@ public class MainActivity extends AppCompatActivity implements
                 }
             };
 
+
+    /**
+     * onCreate function from where the activity starts.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -222,22 +240,39 @@ public class MainActivity extends AppCompatActivity implements
 
         // Check if saveInstance is not null
         if(savedInstanceState != null){
-
+            String movie_result =  savedInstanceState.getString(MOVIE_JSON_RESULT);
+            Log.v("Spinner", "Retrieved json result = " + movie_result);
+            defaultSort = savedInstanceState.getString(MOVIE_DEFAULT_SORT) == null
+                    ? null : savedInstanceState.getString(MOVIE_DEFAULT_SORT);
+            isDataLoadedFromDb = savedInstanceState.getBoolean(MOVIE_LOADED_FROM_OFFLINE_BUNDLE_KEY);
+            try {
+                mJsonArray = new JSONArray(movie_result);
+            } catch (JSONException e) {
+                Log.v("Spinner", "Error Parsing JSOn");
+                e.printStackTrace();
+            }
+            Log.v("Spinner", "SaveInstance called");
+            Log.v("Spinner", "SaveInstance DefaultSort:" + defaultSort);
+            Log.v("Spinner", "SaveInstance mJsonArray: " + mJsonArray);
+            Log.v("Spinner", "SaveInstance isLoaded from Db: " + isDataLoadedFromDb + "\n");
             // Restore the data from the last save instance.
-            String movie_result = (String) savedInstanceState.get(MOVIE_JSON_RESULT);
-            defaultSort = savedInstanceState.getString(MOVIE_DEFAULT_SORT);
-            if(defaultSort != null && (null != movie_result || movie_result.length() != 0)){
-                try {
-                    mJsonArray = new JSONArray(movie_result);
+            if(!isDataLoadedFromDb){
+
+                if( mJsonArray != null) {
+                    Log.v("Spinner", "SaveInstance Swapping adapter data");
                     mAdapter.swapMovieArray(mJsonArray);
                     mAdapter.notifyDataSetChanged();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                }else {
+                    Log.v("Spinner", "SaveInstance Loading from online.");
+                    loadMovies();
                 }
+
             } else {
+                Log.v("Spinner", "SaveInstance loading from offline.");
                 loadMoviesFromDb();
             }
         }else {
+            Log.v("Spinner", "No Save Instance.");
             // Load the movies asynchronously or in background thread if there is network.
             if(NetworkUtils.isNetworkConnected(this) && null != defaultSort) {
                 // Load the movies from internet.
@@ -249,10 +284,16 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+    }
+
     /**
      * This is a helper function which setup the preferences.
      */
     private void setupPreference() {
+        Log.v("Spinner", "From Setup Preference");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         int selectedPosition = sharedPreferences.getInt(getString(R.string.preference_key_sort_order), 0);
         mSortSpinner.setSelection(selectedPosition);
@@ -269,7 +310,8 @@ public class MainActivity extends AppCompatActivity implements
             to choose between popular movie or most rated movie data.
      */
     private void loadMovies(){
-        // Set the flag of data loaded from Db to false.
+        Log.v("Spinner", "Data Loading From Internet.");
+        // Set the flag of data loaded from offline Db to false.
         isDataLoadedFromDb = false;
         // Get the movies url based on the current movie sort option
         URL moviesUrls = NetworkUtils.buildUrl(defaultSort);
@@ -296,8 +338,8 @@ public class MainActivity extends AppCompatActivity implements
         asynchronously by spinning up a loader.
      */
     private void loadMoviesFromDb(){
-        Log.v("DbCall", "Im called");
-        // Since we are loading from Db then mark it true.
+        // Since we are loading from offline Db then mark it true.
+        Log.v("Spinner", "Loaded from db");
         isDataLoadedFromDb = true;
         mSortSpinner.setSelection(2);
         Bundle bundle = new Bundle();
@@ -308,8 +350,10 @@ public class MainActivity extends AppCompatActivity implements
         if(loaderNetwork != null)
             loaderNetwork.cancelLoad();
         if(loader == null){
+            Log.v("Spinner", "loader init");
             loaderManager.initLoader(DATABASE_LOADER_ID, bundle, favouriteMovieLoaderListener);
         }else {
+            Log.v("Spinner", "loader Restarted");
             loaderManager.restartLoader(DATABASE_LOADER_ID, bundle, favouriteMovieLoaderListener);
         }
     }
@@ -332,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String item = (String) parent.getItemAtPosition(position);
+        Log.v("Spinner", "Item: " + item);
         if(item.equals(getString(R.string.spinner_popularity))){
             if(!NetworkUtils.PATH_POPULAR.equals(defaultSort)){
                 if(NetworkUtils.isNetworkConnected(this)){
@@ -351,10 +396,13 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }else {
-            // Show the movies from db.
-            loadMoviesFromDb();
-            showResult();
+            if(defaultSort != null) {
+                // Show the movies from db.
+                loadMoviesFromDb();
+                showResult();
+            }
         }
+        // Save the current preference.
         PreferenceManager.getDefaultSharedPreferences(this)
                 .edit()
                 .putInt(getString(R.string.preference_key_sort_order), position)
@@ -366,9 +414,15 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    /**
+     * This function is used when the movie list item (images) are
+     * clicked by the user, it takes position (item clicked) and then
+     * create an intent based on whether data was loaded from favourite
+     * list or from internet and then launches the detail activity.
+     * @param position
+     */
     @Override
     public void onClick(int position) {
-        //URL url = NetworkUtils.buildUrl(String.valueOf(id));
         try {
             Intent intent = new Intent(this, MovieDetail.class);
             if(!isDataLoadedFromDb) {
@@ -383,15 +437,26 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Save the current state of the app.
+     * @param outState
+     */
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         String jsonResult = "";
         if(null != mJsonArray){
             jsonResult = mJsonArray.toString();
         }
+        Log.v("Spinner", "Saving jSon = " + jsonResult);
         outState.putString(MOVIE_JSON_RESULT, jsonResult);
         outState.putString(MOVIE_DEFAULT_SORT, defaultSort);
+        outState.putBoolean(MOVIE_LOADED_FROM_OFFLINE_BUNDLE_KEY, isDataLoadedFromDb);
 
-        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 }

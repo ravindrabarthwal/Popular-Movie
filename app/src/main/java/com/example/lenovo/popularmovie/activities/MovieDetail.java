@@ -52,8 +52,6 @@ public class MovieDetail extends AppCompatActivity {
     private final int TRAILER_LOADER_MANAGER_ID = 102;
     private final int MOVIE_QUERY_DB_LOADER_ID = 200;
     private final int MOVIE_INSERT_DB_LOADER_ID = 201;
-    private final int MOVIE_DELETE_DB_LOADER_ID = 202;
-    private final int DOWNLOAD_IMAGE_LOADER_ID = 300;
     private final String MOVIE_ID_BUNDLE_KEY = "movie-id";
     private final String REVIEW_AUTHOR_KEY = "review-author";
     private final String REVIEW_CONTENT_KEY = "review-content";
@@ -81,6 +79,10 @@ public class MovieDetail extends AppCompatActivity {
     @BindView(R.id.error_trailer) TextView mErrorTrailerTextView;
     @BindView(R.id.fab) FloatingActionButton fab;
 
+    /**
+     * This is the loader callback which load reviews and trailers
+     * of the movie from the internet.
+     */
     private LoaderManager.LoaderCallbacks<String> loadReviewAndTrailerLoaderListener =
             new LoaderManager.LoaderCallbacks<String>() {
                 @Override
@@ -142,6 +144,10 @@ public class MovieDetail extends AppCompatActivity {
                 }
             };
 
+    /**
+     * This is the loader callback which save the movie detail
+     * in the favourite table or list in DB.
+     */
     private LoaderManager.LoaderCallbacks<Uri> saveMovieDetailLoaderListener =
             new LoaderManager.LoaderCallbacks<Uri>() {
                 @Override
@@ -204,6 +210,10 @@ public class MovieDetail extends AppCompatActivity {
                 }
             };
 
+    /**
+     * This is the loader callback which is used to fetch the movie
+     * detail from the database.
+     */
     private LoaderManager.LoaderCallbacks<Cursor> queryMovieDetailLoaderListener =
             new LoaderManager.LoaderCallbacks<Cursor>() {
                 @Override
@@ -251,9 +261,8 @@ public class MovieDetail extends AppCompatActivity {
                             // Set movie to favourite, b'coz we loaded from favourite ;)
                             isFavourite = true;
                             isLoadingReview = false;
-                            setMovieDetails(posterPath, movieId, title, date, rating,
+                            setMovieDetails(posterPath, movieId, title.toString(), date, rating,
                                     synopsis, reviewAuthor, reviewContent, movieTrailerLink);
-                            getSupportActionBar().setTitle(title);
                             data.close();
                         }
                     }
@@ -264,6 +273,7 @@ public class MovieDetail extends AppCompatActivity {
 
                 }
             };
+
     /*
         This function is the way to enter to this activity.
         It hooks up the ui and perform all the necessary tasks.
@@ -290,6 +300,8 @@ public class MovieDetail extends AppCompatActivity {
         else {
             // Get the intent which created this activity.
             Intent intent = getIntent();
+            // MovieId variable
+            String movieId;
             // If intent come from the MainActivity therefore it must have the movie detail.
             if (intent.hasExtra("movie_object")) {
                 // If so then.
@@ -299,7 +311,7 @@ public class MovieDetail extends AppCompatActivity {
                     // Get the poster path from the json object.
                     String posterPath = NetworkUtils.MOVIEDB_POSTER_PATH_BASE_URL + jsonObject.getString("poster_path");
                     // Get the movie id from the object.
-                    String movieId = jsonObject.getString("id");
+                    movieId = jsonObject.getString("id");
                     String title = jsonObject.getString("original_title");
                     String date = jsonObject.getString("release_date");
                     String rating = jsonObject.getString("vote_average");
@@ -312,32 +324,38 @@ public class MovieDetail extends AppCompatActivity {
                     // Set the title of the movie to the actionBar title.
                     //actionBar.setTitle(title);
                     String reviewAuthor = null, reviewContent = null, movieTrailerLink = null;
-
-                    if(NetworkUtils.isNetworkConnected(this)) {
-                        isLoadingReview = true;
-                        // Load Reviews from Internet.
-                        loadReviews(movieId);
-                        // Load Trailers from Internet.
-                        loadTrailers(movieId);
+                    // Check if the movie is on favourite list
+                    // If yes, load from database anyway whether internet connected or not.
+                    if(isFavourite){
+                        loadCurrentMovieFromDb(movieId);
+                    }else {
+                        if (NetworkUtils.isNetworkConnected(this)) {
+                            // If network is connected and we are loading
+                            //reviews and trailers thereby mark these flag
+                            //appropriately to update ui as expected.
+                            isLoadingReview = true;
+                            // Load Reviews from Internet.
+                            loadReviews(movieId);
+                            // Load Trailers from Internet.
+                            loadTrailers(movieId);
+                        }
+                        // Otherwise
+                        else {
+                            // Set the loading progress bar to invisible.
+                            mTrailerProgressBar.setVisibility(View.INVISIBLE);
+                            mReviewProgressBar.setVisibility(View.INVISIBLE);
+                            // Put the message in the error fields of no connection.
+                            mErrorTrailerTextView.setText(R.string.error_no_connection);
+                            mErrorReviewTextView.setText(R.string.error_no_connection);
+                            // Make those text views visible.
+                            mErrorReviewTextView.setVisibility(View.VISIBLE);
+                            mErrorTrailerTextView.setVisibility(View.VISIBLE);
+                        }
+                        // Update the UI accordingly.
+                        setMovieDetails(posterPath, movieId, title, date, rating,
+                                synopsis, reviewAuthor, reviewContent, movieTrailerLink);
                     }
-                    // Otherwise
-                    else {
-                        // Set the loading progress bar to invisible.
-                        mTrailerProgressBar.setVisibility(View.INVISIBLE);
-                        mReviewProgressBar.setVisibility(View.INVISIBLE);
-                        // Put the message in the error fields of no connection.
-                        mErrorTrailerTextView.setText(R.string.error_no_connection);
-                        mErrorReviewTextView.setText(R.string.error_no_connection);
-                        // Make those text views visible.
-                        mErrorReviewTextView.setVisibility(View.VISIBLE);
-                        mErrorTrailerTextView.setVisibility(View.VISIBLE);
-                    }
 
-                    setMovieDetails(posterPath, movieId, title, date, rating,
-                            synopsis, reviewAuthor, reviewContent, movieTrailerLink);
-
-                    // Check if the Network is available.
-                    // If yes
                 } catch (JSONException e) {
                     // If error parsing json object print the stack trace.
                     e.printStackTrace();
@@ -346,17 +364,8 @@ public class MovieDetail extends AppCompatActivity {
             // The activity isn't created by the intent with the data it means
             // We need to fetch the data from database.
             else {
-                String movieId = intent.getStringExtra("movie_id");
-                Bundle bundle = new Bundle();
-                bundle.putString(MOVIE_ID_BUNDLE_KEY, movieId);
-
-                LoaderManager loaderManager = getSupportLoaderManager();
-                Loader<Cursor> loader = loaderManager.getLoader(MOVIE_QUERY_DB_LOADER_ID);
-
-                if(loader == null)
-                    loaderManager.initLoader(MOVIE_QUERY_DB_LOADER_ID, bundle, queryMovieDetailLoaderListener);
-                else
-                    loaderManager.restartLoader(MOVIE_QUERY_DB_LOADER_ID, bundle, queryMovieDetailLoaderListener);
+                movieId = intent.getStringExtra("movie_id");
+                loadCurrentMovieFromDb(movieId);
             }
         }
 
@@ -395,15 +404,49 @@ public class MovieDetail extends AppCompatActivity {
         });
     }
 
+    /**
+     * This is the helper method which is used to load the
+     * movie details from the database by spinning up a loader.
+     * @param movieId - Id of movie to load details from Db.
+     */
+    private void loadCurrentMovieFromDb(String movieId) {
+        Bundle bundle = new Bundle();
+        bundle.putString(MOVIE_ID_BUNDLE_KEY, movieId);
+
+        LoaderManager loaderManager = getSupportLoaderManager();
+        Loader<Cursor> loader = loaderManager.getLoader(MOVIE_QUERY_DB_LOADER_ID);
+
+        if(loader == null)
+            loaderManager.initLoader(MOVIE_QUERY_DB_LOADER_ID, bundle, queryMovieDetailLoaderListener);
+        else
+            loaderManager.restartLoader(MOVIE_QUERY_DB_LOADER_ID, bundle, queryMovieDetailLoaderListener);
+
+    }
+
+    /**
+     * This is the helper function which setup the UI by populating
+     * information on text views and image views.
+     * @param posterPath
+     * @param movieId
+     * @param title
+     * @param date
+     * @param rating
+     * @param synopsis
+     * @param reviewAuthor
+     * @param reviewContent
+     * @param movieTrailerLink
+     */
     private void setMovieDetails(String posterPath, String movieId, String title,
                                  String date, String rating, String synopsis,
                                  String reviewAuthor, String reviewContent, String movieTrailerLink){
-        // Change the image view image with this poster using picasso.
-        Picasso.with(MovieDetail.this).load(posterPath).into(mMovieImagePosterImageView);
+        // Make a new file with current poster path.
         File file = new File(posterPath);
+        // If file exists, locally saved.
         if(file.exists()){
+            // Load the file
             Picasso.with(MovieDetail.this).load(file).into(mMovieImagePosterImageView);
         }else {
+            // Otherwise, the poster path is http link and therefore grab from the internet.
             Picasso.with(MovieDetail.this).load(posterPath).into(mMovieImagePosterImageView);
         }
         // Also add the poster path tag to it's image view so that we can later
@@ -415,7 +458,7 @@ public class MovieDetail extends AppCompatActivity {
         // Check Is the movie added to the favourite list.
         changeFavouriteIcon();
         // Set the title of the movie to the actionBar title.
-        //getSupportActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
         // Set the movie release date.
         mMovieYearTextView.setText(date);
         // Set the movie rating.
@@ -440,13 +483,14 @@ public class MovieDetail extends AppCompatActivity {
                 // Otherwise show no trailer error.
                 hideTrailersLayoutAndShowError();
             }
-        }else {
-            // Title isn't setting when getting data from db. Line 418 not working for
-            // data from database.
-            getSupportActionBar().setTitle(title);
         }
     }
 
+    /**
+     * This helper method show the trailer layout and also
+     * add the link to the layout tag.
+     * @param movieTrailerLink
+     */
     private void showTrailersLayout(String movieTrailerLink) {
         mTrailer1LinearLayout.setTag(movieTrailerLink);
         mTrailerProgressBar.setVisibility(View.INVISIBLE);
@@ -454,6 +498,10 @@ public class MovieDetail extends AppCompatActivity {
         mErrorTrailerTextView.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * This helper function hide the trailer layout and show
+     * the error on it's place.
+     */
     private void hideTrailersLayoutAndShowError() {
         mErrorTrailerTextView.setVisibility(View.INVISIBLE);
         mErrorTrailerTextView.setVisibility(View.VISIBLE);
@@ -461,6 +509,12 @@ public class MovieDetail extends AppCompatActivity {
         mTrailer1LinearLayout.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * This helper function set the author and review on textview
+     * and then make them visible.
+     * @param reviewAuthor
+     * @param reviewContent
+     */
     private void showReviewsLayout(String reviewAuthor, String reviewContent) {
         mReviewAuthorTextView.setText(reviewAuthor);
         mReviewContentTextView.setText(reviewContent);
@@ -470,6 +524,10 @@ public class MovieDetail extends AppCompatActivity {
         mErrorReviewTextView.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * This helper function hide the review layout and then
+     * show the error in place of it.
+     */
     private void hideReviewsLayoutAndShowError() {
         mReviewProgressBar.setVisibility(View.INVISIBLE);
         mReviewAuthorTextView.setVisibility(View.INVISIBLE);
