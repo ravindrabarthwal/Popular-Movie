@@ -1,9 +1,7 @@
 package com.example.lenovo.popularmovie.activities;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -30,12 +28,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.lenovo.popularmovie.R;
 import com.example.lenovo.popularmovie.data.MoviesContract.FavouriteEntry;
 import com.example.lenovo.popularmovie.utilities.NetworkUtils;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -851,6 +847,7 @@ public class MovieDetail extends AppCompatActivity {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         outState.putString(REVIEW_AUTHOR_KEY, mReviewAuthorTextView.getText().toString());
         outState.putString(REVIEW_CONTENT_KEY, mReviewContentTextView.getText().toString());
         outState.putString(TRAILER_URL_KEY, mTrailer1LinearLayout.getTag().toString());
@@ -861,7 +858,6 @@ public class MovieDetail extends AppCompatActivity {
         outState.putString(MOVIE_POSTER_URL, mMovieImagePosterImageView.getTag().toString());
         outState.putString(MOVIE_ID_KEY, mMovieDescriptionTextView.getTag().toString());
         outState.putBoolean(MOVIE_IS_FAVOURITE, isFavourite);
-        super.onSaveInstanceState(outState);
     }
 
 }
