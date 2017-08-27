@@ -82,11 +82,16 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MoviesView
         mCursor.moveToPosition(position);
         String posterPath = mCursor.getString(mCursor.getColumnIndex(MoviesContract.FavouriteEntry.MOVIE_POSTER));
         int movie_id = mCursor.getInt(mCursor.getColumnIndex(MoviesContract.FavouriteEntry.MOVIE_ID));
+        File f = new File(posterPath);
+        if(f.exists())
+            Picasso.with(mContext)
+                    .load(f)
+                    .into(holder.mMovieImageView);
+        else
+            Picasso.with(mContext)
+                    .load(posterPath)
+                    .into(holder.mMovieImageView);
 
-
-        Picasso.with(mContext)
-                .load(new File(posterPath))
-                .into(holder.mMovieImageView);
         holder.itemView.setTag(movie_id);
     }
 

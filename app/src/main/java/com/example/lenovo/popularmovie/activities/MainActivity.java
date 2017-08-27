@@ -2,7 +2,9 @@ package com.example.lenovo.popularmovie.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -12,6 +14,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -104,6 +107,12 @@ public class MainActivity extends AppCompatActivity implements
                                 return null;
                             }
                         }
+
+                        @Override
+                        public void deliverResult(String data) {
+                            result = data;
+                            super.deliverResult(data);
+                        }
                     };
                 }
 
@@ -168,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements
                                     null,
                                     null);
                         }
+
                     };
                 }
 
@@ -232,7 +242,12 @@ public class MainActivity extends AppCompatActivity implements
          */
         mAdapter = new MoviesAdapter(this, null, this);
         // Spinning up the gridlayout manager.
-        GridLayoutManager gm = new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false);
+        StaggeredGridLayoutManager gm;
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            gm = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        }else {
+            gm = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
+        }
 
         // Set layout manager and adapter on the recyclerview.
         mRecyclerView.setLayoutManager(gm);
@@ -245,23 +260,27 @@ public class MainActivity extends AppCompatActivity implements
             defaultSort = savedInstanceState.getString(MOVIE_DEFAULT_SORT) == null
                     ? null : savedInstanceState.getString(MOVIE_DEFAULT_SORT);
             isDataLoadedFromDb = savedInstanceState.getBoolean(MOVIE_LOADED_FROM_OFFLINE_BUNDLE_KEY);
-            try {
-                mJsonArray = new JSONArray(movie_result);
-            } catch (JSONException e) {
-                Log.v("Spinner", "Error Parsing JSOn");
-                e.printStackTrace();
-            }
             Log.v("Spinner", "SaveInstance called");
             Log.v("Spinner", "SaveInstance DefaultSort:" + defaultSort);
             Log.v("Spinner", "SaveInstance mJsonArray: " + mJsonArray);
             Log.v("Spinner", "SaveInstance isLoaded from Db: " + isDataLoadedFromDb + "\n");
             // Restore the data from the last save instance.
             if(!isDataLoadedFromDb){
+                if(movie_result != null) {
+                    try {
+                        mJsonArray = new JSONArray(movie_result);
+                    } catch (JSONException e) {
+                        Log.v("Spinner", "Error Parsing JSOn");
+                        e.printStackTrace();
+                    }
 
-                if( mJsonArray != null) {
-                    Log.v("Spinner", "SaveInstance Swapping adapter data");
-                    mAdapter.swapMovieArray(mJsonArray);
-                    mAdapter.notifyDataSetChanged();
+                    if (mJsonArray != null) {
+                        Log.v("Spinner", "SaveInstance Swapping adapter data");
+                        mAdapter.swapMovieArray(mJsonArray);
+                        mAdapter.notifyDataSetChanged();
+                    }else {
+                        loadMovies();
+                    }
                 }else {
                     Log.v("Spinner", "SaveInstance Loading from online.");
                     loadMovies();
@@ -383,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements
                     defaultSort = NetworkUtils.PATH_POPULAR;
                     loadMovies();
                 } else {
-                    Toast.makeText(this, getString(R.string.error_no_connection), Toast.LENGTH_LONG).show();
+                    Snackbar.make(view, getString(R.string.error_no_connection), Snackbar.LENGTH_LONG).show();
                 }
             }
         }else if(item.equals(getString(R.string.spinner_rating))){
@@ -392,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements
                     defaultSort = NetworkUtils.PATH_TOP_RATED;
                     loadMovies();
                 }else {
-                    Toast.makeText(this, getString(R.string.error_no_connection), Toast.LENGTH_LONG).show();
+                    Snackbar.make(view, getString(R.string.error_no_connection), Snackbar.LENGTH_LONG).show();
                 }
             }
         }else {
@@ -444,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        String jsonResult = "";
+        String jsonResult = null;
         if(null != mJsonArray){
             jsonResult = mJsonArray.toString();
         }

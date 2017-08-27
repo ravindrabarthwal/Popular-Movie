@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import com.example.lenovo.popularmovie.BuildConfig;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -38,7 +39,7 @@ import okhttp3.Response;
 public class NetworkUtils {
 
     // Movie Db Api Key
-    private final static String API_KEY = "";
+    private final static String API_KEY = BuildConfig.THE_MOVIE_DB_API_TOKEN;
     // Movie Db Base Api Address
     private final static String MOVIEDB_BASE_URL = "https://api.themoviedb.org/3/movie";
     // Base address for the poster of movies

@@ -23,4 +23,5 @@
     <string name="error_no_connection">No internet connection</string>
     <string name="preference_key_sort_order">sort_order</string>
     <string name="error_no_fav">No movies in favourite list.</string>
+    <string name="pref_external_key">pref_external_storage_permission_key</string>
 </resources>

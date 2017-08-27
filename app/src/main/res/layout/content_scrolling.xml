@@ -7,176 +7,180 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.lenovo.popularmovie.activities.MovieDetail"
     tools:showIn="@layout/activity_movie_detail">
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
+        android:layout_height="wrap_content">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="@dimen/text_margin"
-            android:layout_marginBottom="@dimen/text_margin">
-            <TextView
-                android:id="@+id/movie_year"
-                tools:text="2015"
-                android:layout_height="wrap_content"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:textAlignment="center"
-                android:textSize="@dimen/textview_basic"
-                android:textStyle="italic"/>
+            android:orientation="vertical">
 
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="@android:color/darker_gray"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:id="@+id/movie_rating"
-                tools:text="8.9"
-                android:textAlignment="center"
-                android:textSize="@dimen/textview_basic"
-                android:textStyle="italic"/>
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
-            android:text="@string/movie_description_title"
-            android:textSize="@dimen/textview_title"
-            android:textStyle="bold"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/movie_description"
-            android:layout_marginBottom="@dimen/text_margin"
-            android:layout_marginLeft="@dimen/text_margin"
-            android:layout_marginRight="@dimen/text_margin"
-            tools:text="This is very long movie description. And I hope it's good."
-            android:textSize="@dimen/textview_basic"/>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin">
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/movie_year"
+                    tools:text="2015"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/text_margin"
-                    android:text="@string/movie_trailers"
-                    android:textSize="@dimen/textview_title"
-                    android:textStyle="bold"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:id="@+id/trailer1"
-                    android:tag=""
-                    android:layout_margin="@dimen/text_margin"
-                    android:visibility="invisible">
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_media_play"
-                        android:background="@color/colorAccent"/>
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="@dimen/textview_basic"
-                        android:layout_marginLeft="@dimen/text_margin"
-                        android:text="Trailer 1"
-                        android:textStyle="bold"
-                        android:layout_gravity="center"/>
-                </LinearLayout>
-
-            </LinearLayout>
-            <ProgressBar
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:id="@+id/trailer_progress_bar"
-                android:layout_gravity="center"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/error_trailer"
-                android:text="@string/error_trailer"
-                android:visibility="invisible"
-                android:layout_gravity="center"/>
-        </FrameLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/text_margin"
-                    android:text="@string/movie_reviews"
-                    android:textSize="@dimen/textview_title"
-                    android:textStyle="bold"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/review_author"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
                     android:textSize="@dimen/textview_basic"
-                    android:layout_margin="@dimen/text_margin"
-                    android:textStyle="bold"/>
+                    android:textStyle="italic"/>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/darker_gray"/>
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:id="@+id/review_content"
-                    android:layout_marginBottom="@dimen/text_margin"
-                    android:layout_marginRight="@dimen/text_margin"
-                    android:layout_marginLeft="@dimen/text_margin"
+                    android:id="@+id/movie_rating"
+                    tools:text="8.9"
+                    android:textAlignment="center"
                     android:textSize="@dimen/textview_basic"
                     android:textStyle="italic"/>
             </LinearLayout>
-            <ProgressBar
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:id="@+id/review_progress_bar"
-                android:layout_gravity="center"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/error_review"
-                android:text="@string/error_review"
-                android:visibility="invisible"
-                android:layout_gravity="center"/>
-        </FrameLayout>
+                android:layout_margin="@dimen/text_margin"
+                android:text="@string/movie_description_title"
+                android:textSize="@dimen/textview_title"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/movie_description"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:layout_marginLeft="@dimen/text_margin"
+                android:layout_marginRight="@dimen/text_margin"
+                tools:text="This is very long movie description. And I hope it's good."
+                android:textSize="@dimen/textview_basic"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-    </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/text_margin"
+                        android:text="@string/movie_trailers"
+                        android:textSize="@dimen/textview_title"
+                        android:textStyle="bold"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:id="@+id/trailer1"
+                        android:tag=""
+                        android:layout_margin="@dimen/text_margin"
+                        android:visibility="invisible">
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@android:drawable/ic_media_play"
+                            android:background="@color/colorAccent"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/textview_basic"
+                            android:layout_marginLeft="@dimen/text_margin"
+                            android:text="Trailer 1"
+                            android:textStyle="bold"
+                            android:layout_gravity="center"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+                <ProgressBar
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:id="@+id/trailer_progress_bar"
+                    android:layout_gravity="center"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/error_trailer"
+                    android:text="@string/error_trailer"
+                    android:visibility="invisible"
+                    android:layout_gravity="center"/>
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/text_margin"
+                        android:text="@string/movie_reviews"
+                        android:textSize="@dimen/textview_title"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/review_author"
+                        android:textSize="@dimen/textview_basic"
+                        android:layout_margin="@dimen/text_margin"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/review_content"
+                        android:layout_marginBottom="@dimen/text_margin"
+                        android:layout_marginRight="@dimen/text_margin"
+                        android:layout_marginLeft="@dimen/text_margin"
+                        android:textSize="@dimen/textview_basic"
+                        android:textStyle="italic"/>
+                </LinearLayout>
+                <ProgressBar
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:id="@+id/review_progress_bar"
+                    android:layout_gravity="center"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/error_review"
+                    android:text="@string/error_review"
+                    android:visibility="invisible"
+                    android:layout_gravity="center"/>
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+        </LinearLayout>
+    </ScrollView>
 
 </android.support.v4.widget.NestedScrollView>

@@ -1,21 +1,27 @@
 package com.example.lenovo.popularmovie.activities;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -64,6 +70,7 @@ public class MovieDetail extends AppCompatActivity {
     private final String MOVIE_IS_FAVOURITE = "movie-fav";
     private boolean isFavourite;
     private boolean isLoadingReview;
+    private boolean isStoragePermissionEnabled;
     private String posterAbsolutePath = null;
 
     @BindView(R.id.movie_year) TextView mMovieYearTextView;
@@ -291,6 +298,8 @@ public class MovieDetail extends AppCompatActivity {
         // Binding butterknife
         ButterKnife.bind(this);
 
+        setupPreferences();
+
         // Check if saveInstance isn't null
         if(savedInstanceState != null){
             // if so update the UI with the instance data.
@@ -402,6 +411,60 @@ public class MovieDetail extends AppCompatActivity {
                     startActivity(intent); // start the intent.
             }
         });
+    }
+
+    private void setupPreferences() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        // 0. Permission Deny
+        // 1. Permission Granted
+        // 2. Permission Never Checked
+        int permission = pref.getInt(getString(R.string.pref_external_key), 2);
+        switch (permission){
+            case 0: isStoragePermissionEnabled = false; break;
+            case 1: isStoragePermissionEnabled = true; break;
+            case 2: {
+                isStoragePermissionGranted();
+            }
+        }
+        Log.v("Perm", ""+permission);
+    }
+
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Spinner","Permission is granted");
+                return true;
+            } else {
+                Log.v("Spinner","Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("Spinner","Permission is granted");
+            return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        int newPermission;
+        if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
+            Log.v("Spinner","Permission: "+permissions[0]+ "was "+grantResults[0]);
+            //resume tasks needing this permission
+            isStoragePermissionEnabled = true;
+            Log.v("Spinner", "New Permission: Permission Granted!");
+            newPermission = 1;
+        } else {
+            newPermission = 0;
+            Log.v("Spinner", "New Permission: Permission Denyed!");
+        }
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putInt(getString(R.string.pref_external_key), newPermission)
+                .apply();
     }
 
     /**
@@ -582,7 +645,11 @@ public class MovieDetail extends AppCompatActivity {
         spins up the new loader again which then save the movie detail.
      */
     private void downloadImageAndAddToFavourite(final String movieId, final String posterPath){
-        posterAbsolutePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/popular_movie_" + movieId + ".jpg";
+        if(isStoragePermissionEnabled){
+            posterAbsolutePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/popular_movie_" + movieId + ".jpg";
+        }else {
+            posterAbsolutePath = posterPath;
+        }
         Target target = new Target() {
             @Override
             public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -623,6 +690,7 @@ public class MovieDetail extends AppCompatActivity {
         Picasso.with(MovieDetail.this)
                 .load(posterPath)
                 .into(target);
+
         addToFavourite();
     }
     /*
